@@ -24,15 +24,17 @@ function displayEarliestPredictions(stopId, predictions) {
 
 function runForever() {
     promptForStopIdAndThen(stopId => {
-        try {
-            getArrivalPredictions(stopId, predictions => {
+        getArrivalPredictions(
+            stopId, 
+            predictions => {
                 displayEarliestPredictions(stopId, predictions);
                 runForever();
-            });
-        } catch (e) {
-            console.error(e.message);
-            runForever();
-        }
+            },
+            err => {
+                console.error(err.message);
+                runForever();
+            }
+        );
     });
 }
 

@@ -14,20 +14,20 @@ function getRequestUrl(endpoint) {
     return requestUrl.href;
 }
 
-// The callback passed to this function should expect to be 
-// passed an array of ArrivalPrediction objects.
-export function getArrivalPredictions(stopId, callback) {
+// The success callback passed to this function should expect 
+// to be passed an array of ArrivalPrediction objects.
+export function getArrivalPredictions(stopId, successCallback, errCallback) {
     const url = getRequestUrl(`StopPoint/${stopId}/Arrivals`);
     request.get(url, (err, response, body) => {
         if (err) {
-            throw err;
+            errCallback(err);
         } else if (response.statusCode !== 200) {
-            throw new Error(`Request to ${url} failed with status code ${response.statusCode}`);
+            errCallback(new Error(`Request to ${url} failed with status code ${response.statusCode}. ${JSON.parse(body).message}`));
         } else {
             const arrivalPredictions = JSON.parse(body).map(entity =>
                 new ArrivalPrediction(entity.lineName, entity.destinationName, entity.timeToStation)
             );
-            callback(arrivalPredictions);
+            successCallback(arrivalPredictions);
         }
     });
 }
