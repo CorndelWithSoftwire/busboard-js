@@ -1,6 +1,4 @@
 import BaseApiClient from './baseApiClient';
-import ArrivalPrediction from '../models/arrivalPrediction';
-import StopPoint from '../models/stopPoint';
 
 const BASE_URL = 'https://api.tfl.gov.uk';
 const REQUIRED_PARAMS = [
@@ -16,32 +14,24 @@ export default class TflApiClient extends BaseApiClient {
     // Returns a Promise that, upon success, resolves 
     // to an array of ArrivalPrediction objects.
     getArrivalPredictions(stopId, onSuccess, onError) {
-        const endpoint = `StopPoint/${stopId}/Arrivals`;
-        const parameters = [];
-
-        return this.makeGetRequest(endpoint, parameters).then(body =>
-            JSON.parse(body).map(entity =>
-                new ArrivalPrediction(entity.lineName, entity.destinationName, entity.timeToStation)
-            )    
+        return this.makeGetRequest(
+            `StopPoint/${stopId}/Arrivals`, 
+            []
         );
     }
 
     // Returns a Promise that, upon success, resolves 
     // to an array of StopPoint objects, from nearest 
     // to furthest.
-    getStopPointsNear(location) {
-        const endpoint = `StopPoint`;
-        const parameters = [
-            {name: 'stopTypes', value: 'NaptanPublicBusCoachTram'},
-            {name: 'lat', value: location.latitude},
-            {name: 'lon', value: location.longitude},
-            {name: 'radius', value: 1000}
-        ];
-
-        return this.makeGetRequest(endpoint, parameters).then(body =>
-            JSON.parse(body).stopPoints.map(entity =>
-                new StopPoint(entity.naptanId, entity.commonName)
-            )
+    getNearbyStopPoints(latitude, longitude) {
+        return this.makeGetRequest(
+            `StopPoint`, 
+            [
+                {name: 'stopTypes', value: 'NaptanPublicBusCoachTram'},
+                {name: 'lat', value: latitude},
+                {name: 'lon', value: longitude},
+                {name: 'radius', value: 1000}
+            ]
         );
     }
 }

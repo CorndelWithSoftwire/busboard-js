@@ -1,6 +1,4 @@
 import { createInterface } from 'readline';
-import TflApiClient from './apiClients/tflApiClient';
-import PostcodesApiClient from './apiClients/postcodesApiClient';
 
 const readline = createInterface({
     input: process.stdin,
@@ -8,9 +6,8 @@ const readline = createInterface({
 });
 
 export default class ConsoleRunner {
-    constructor() {
-        this.tflApiClient = new TflApiClient();
-        this.postcodesApiClient = new PostcodesApiClient();
+    constructor(departureBoardsService) {
+        this.departureBoardsService = departureBoardsService;
     }
 
     handleError(reason) {
@@ -23,39 +20,25 @@ export default class ConsoleRunner {
             readline.question('\nEnter your postcode: ', resolve)
         );
     }
-
-    getEarliestPredictions(predictions) {
-        return predictions.sort((a, b) => a.timeToStation - b.timeToStation).slice(0, 5);
-    }
     
-    displayPredictions(stopPoint, predictions) {
+    displayArrivals(stopPoint, arrivals) {
         console.log(`\nDeparture board for ${stopPoint.commonName}:`);
-        predictions.forEach(prediction => 
-            console.log(`  ${Math.round(prediction.timeToStation / 60)} minutes: ${prediction.lineName} to ${prediction.destinationName}`)
+        arrivals.forEach(arrival => 
+            console.log(`  ${Math.round(arrival.timeToStation / 60)} minutes: ${arrival.lineName} to ${arrival.destinationName}`)
         );
     }
 
-    displayDepartureBoards(stopPointsAndPredictions) {
-        stopPointsAndPredictions.forEach(data => {
-            const earliestPredictions = this.getEarliestPredictions(data.predictions);
-            this.displayPredictions(data.stopPoint, earliestPredictions);
+    displayDepartureBoards(departureBoards) {
+        departureBoards.forEach(board => {
+            this.displayArrivals(board.stopPoint, board.arrivals);
         });
-    }
-
-    getPredictionsForStopPoints(stopPoints) {
-        return Promise.all(stopPoints.map(stopPoint =>
-            this.tflApiClient.getArrivalPredictions(stopPoint.naptanId)
-                .then(predictions => ({stopPoint, predictions}))
-        ));
     }
 
     runForever() {
         this.promptForPostcode()
-            .then(postcode => this.postcodesApiClient.getLocation(postcode))
-            .then(location => this.tflApiClient.getStopPointsNear(location))
-            .then(stopPoints => this.getPredictionsForStopPoints(stopPoints.slice(0, 2)))
-            .then(stopPointsAndPredictions => {
-                this.displayDepartureBoards(stopPointsAndPredictions);
+            .then(postcode => this.departureBoardsService.getDepartureBoardsForPostcode(postcode.replace(/\s/g, ''), 2, 5))
+            .then(departureBoards => {
+                this.displayDepartureBoards(departureBoards);
                 this.runForever();
             })
             .catch(reason => this.handleError(reason));
