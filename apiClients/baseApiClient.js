@@ -19,9 +19,9 @@ export default class BaseApiClient {
         return new Promise((resolve, reject) => 
             request.get(url, (err, response, body) => {
                 if (err) {
-                    reject(err);
+                    reject({status: response.statusCode, href: url, error: err});
                 } else if (response.statusCode !== 200) {
-                    reject(`Request to ${url} failed with status code ${response.statusCode}. Details:\n\n${body}`);
+                    reject({status: response.statusCode, href: url, error: body});
                 } else {
                     resolve(body);
                 }
