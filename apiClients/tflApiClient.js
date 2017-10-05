@@ -13,29 +13,23 @@ export default class TflApiClient extends BaseApiClient {
         super(BASE_URL, REQUIRED_PARAMS);
     }
 
-    // The success callback passed to this method should expect 
-    // to be given an array of ArrivalPrediction objects.
+    // Returns a Promise that, upon success, resolves 
+    // to an array of ArrivalPrediction objects.
     getArrivalPredictions(stopId, onSuccess, onError) {
         const endpoint = `StopPoint/${stopId}/Arrivals`;
         const parameters = [];
 
-        this.makeGetRequest(
-            endpoint,
-            parameters,
-            (response, body) => {
-                const arrivalPredictions = JSON.parse(body).map(entity =>
-                    new ArrivalPrediction(entity.lineName, entity.destinationName, entity.timeToStation)
-                );
-                onSuccess(arrivalPredictions);
-            },
-            error => onError(error)
+        return this.makeGetRequest(endpoint, parameters).then(body =>
+            JSON.parse(body).map(entity =>
+                new ArrivalPrediction(entity.lineName, entity.destinationName, entity.timeToStation)
+            )    
         );
     }
 
-    // The success callback passed to this method should expect
-    // to be given an array of StopPoint objects, from nearest
+    // Returns a Promise that, upon success, resolves 
+    // to an array of StopPoint objects, from nearest 
     // to furthest.
-    getStopPointsNear(location, onSuccess, onError) {
+    getStopPointsNear(location) {
         const endpoint = `StopPoint`;
         const parameters = [
             {name: 'stopTypes', value: 'NaptanPublicBusCoachTram'},
@@ -44,16 +38,10 @@ export default class TflApiClient extends BaseApiClient {
             {name: 'radius', value: 1000}
         ];
 
-        this.makeGetRequest(
-            endpoint,
-            parameters,
-            (response, body) => {
-                const stopPoints = JSON.parse(body).stopPoints.map(entity =>
-                    new StopPoint(entity.naptanId, entity.commonName)
-                );
-                onSuccess(stopPoints);
-            },
-            error => onError(error)
-        )
+        return this.makeGetRequest(endpoint, parameters).then(body =>
+            JSON.parse(body).stopPoints.map(entity =>
+                new StopPoint(entity.naptanId, entity.commonName)
+            )
+        );
     }
 }

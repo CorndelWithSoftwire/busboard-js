@@ -13,12 +13,18 @@ export default class ConsoleRunner {
         this.postcodesApiClient = new PostcodesApiClient();
     }
 
-    handleError(err) {
-        console.error(err.message);
+    handleError(reason) {
+        console.error(reason);
         this.runForever();
     }
 
-    getEarliestArrivals(predictions) {
+    promptForPostcode() {
+        return new Promise((resolve, reject) =>
+            readline.question('\nEnter your postcode: ', resolve)
+        );
+    }
+
+    getEarliestPredictions(predictions) {
         return predictions.sort((a, b) => a.timeToStation - b.timeToStation).slice(0, 5);
     }
     
@@ -29,49 +35,20 @@ export default class ConsoleRunner {
         );
     }
 
-    getArrivalPredictionsAndThen(stopPoints, predictionsByStopPointCallback) {
-        let predictionsByStopPoint = new Map();
-        let completedCount = 0;
-
-        stopPoints.forEach(stopPoint => {
-            this.tflApiClient.getArrivalPredictions(
-                stopPoint.naptanId, 
-                predictions => {
-                    predictionsByStopPoint.set(stopPoint, predictions);
-                    if (++completedCount === stopPoints.length) {
-                        predictionsByStopPointCallback(predictionsByStopPoint);
-                    }
-                },
-                err => this.handleError(err)
-            );
-        });
-    }
-
-    getNearbyStopPointsAndThen(location, stopPointsCallback) {
-        this.tflApiClient.getStopPointsNear(location, stopPointsCallback, err => this.handleError(err));
-    }
-
-    getLocationAndThen(postcode, locationCallback) {
-        this.postcodesApiClient.getLocation(postcode, locationCallback, err => this.handleError(err));
-    }
-
-    promptForPostcodeAndThen(postcodeCallback) {
-        readline.question('\nEnter your postcode: ', postcode => postcodeCallback(postcode.replace(/\s/g, '')));
-    }
-
     runForever() {
-        this.promptForPostcodeAndThen(postcode =>
-            this.getLocationAndThen(postcode, location =>
-                this.getNearbyStopPointsAndThen(location, stopPoints =>
-                    this.getArrivalPredictionsAndThen(stopPoints.slice(0, 2), predictionsByStopPoint => {
-                        predictionsByStopPoint.forEach((predictions, stopPoint) => {
-                            const earliestArrivals = this.getEarliestArrivals(predictions);
-                            this.displayPredictions(stopPoint, earliestArrivals);
-                        });
-                        this.runForever();
-                    })
-                )
-            )
-        );
+        this.promptForPostcode()
+            .then(postcode => this.postcodesApiClient.getLocation(postcode))
+            .then(location => this.tflApiClient.getStopPointsNear(location))
+            .then(stopPoints => Promise.all(stopPoints.slice(0, 2).map(stopPoint => 
+                this.tflApiClient.getArrivalPredictions(stopPoint.naptanId)
+                    .then(predictions => ({stopPoint, predictions})))))
+            .then(stopPointsAndPredictions => {
+                stopPointsAndPredictions.forEach(data => {
+                    const earliestPredictions = this.getEarliestPredictions(data.predictions);
+                    this.displayPredictions(data.stopPoint, earliestPredictions);
+                });
+                this.runForever();
+            })
+            .catch(reason => this.handleError(reason));
     }
 }

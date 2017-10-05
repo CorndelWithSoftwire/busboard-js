@@ -8,20 +8,15 @@ export default class PostcodesApiClient extends BaseApiClient {
         super(BASE_URL, []);
     }
 
-    // The success callback passed to this method should expect 
-    // to be given a single Location object.
-    getLocation(postcode, onSuccess, onError) {
+    // Returns a Promise that, upon success, resolves 
+    // to a single Location object.
+    getLocation(postcode) {
         const endpoint = `postcodes/${postcode}`;
         const parameters = [];
 
-        this.makeGetRequest(
-            endpoint,
-            parameters,
-            (response, body) => {
-                const jsonBody = JSON.parse(body);
-                onSuccess(new Location(jsonBody.result.latitude, jsonBody.result.longitude));
-            },
-            error => onError(error)
-        );
+        return this.makeGetRequest(endpoint, parameters).then(body => {
+            const jsonBody = JSON.parse(body);
+            return new Location(jsonBody.result.latitude, jsonBody.result.longitude);
+        });
     }
 }

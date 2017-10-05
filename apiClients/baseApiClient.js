@@ -14,16 +14,18 @@ export default class BaseApiClient {
         return requestUrl.href;
     }
 
-    makeGetRequest(endpoint, parameters, onSuccess, onError) {
+    makeGetRequest(endpoint, parameters) {
         const url = this.requestUrl(endpoint, parameters);
-        request.get(url, (err, response, body) => {
-            if (err) {
-                onError(err);
-            } else if (response.statusCode !== 200) {
-                onError(new Error(`Request to ${url} failed with status code ${response.statusCode}. Details:\n\n${body}`));
-            } else {
-                onSuccess(response, body);
-            }
-        });
+        return new Promise((resolve, reject) => 
+            request.get(url, (err, response, body) => {
+                if (err) {
+                    reject(err);
+                } else if (response.statusCode !== 200) {
+                    reject(new Error(`Request to ${url} failed with status code ${response.statusCode}. Details:\n\n${body}`));
+                } else {
+                    resolve(body);
+                }
+            })
+        );
     }
 }
