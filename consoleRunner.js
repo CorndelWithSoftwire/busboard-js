@@ -14,7 +14,7 @@ export default class ConsoleRunner {
     }
 
     handleError(reason) {
-        console.error(reason);
+        console.error('\n' + reason);
         this.runForever();
     }
 
@@ -35,18 +35,27 @@ export default class ConsoleRunner {
         );
     }
 
+    displayDepartureBoards(stopPointsAndPredictions) {
+        stopPointsAndPredictions.forEach(data => {
+            const earliestPredictions = this.getEarliestPredictions(data.predictions);
+            this.displayPredictions(data.stopPoint, earliestPredictions);
+        });
+    }
+
+    getPredictionsForStopPoints(stopPoints) {
+        return Promise.all(stopPoints.map(stopPoint =>
+            this.tflApiClient.getArrivalPredictions(stopPoint.naptanId)
+                .then(predictions => ({stopPoint, predictions}))
+        ));
+    }
+
     runForever() {
         this.promptForPostcode()
             .then(postcode => this.postcodesApiClient.getLocation(postcode))
             .then(location => this.tflApiClient.getStopPointsNear(location))
-            .then(stopPoints => Promise.all(stopPoints.slice(0, 2).map(stopPoint => 
-                this.tflApiClient.getArrivalPredictions(stopPoint.naptanId)
-                    .then(predictions => ({stopPoint, predictions})))))
+            .then(stopPoints => this.getPredictionsForStopPoints(stopPoints.slice(0, 2)))
             .then(stopPointsAndPredictions => {
-                stopPointsAndPredictions.forEach(data => {
-                    const earliestPredictions = this.getEarliestPredictions(data.predictions);
-                    this.displayPredictions(data.stopPoint, earliestPredictions);
-                });
+                this.displayDepartureBoards(stopPointsAndPredictions);
                 this.runForever();
             })
             .catch(reason => this.handleError(reason));

@@ -21,7 +21,7 @@ export default class BaseApiClient {
                 if (err) {
                     reject(err);
                 } else if (response.statusCode !== 200) {
-                    reject(new Error(`Request to ${url} failed with status code ${response.statusCode}. Details:\n\n${body}`));
+                    reject(`Request to ${url} failed with status code ${response.statusCode}. Details:\n\n${body}`);
                 } else {
                     resolve(body);
                 }
