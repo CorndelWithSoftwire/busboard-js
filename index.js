@@ -1,5 +1,5 @@
 import { createInterface } from 'readline';
-import { getArrivalPredictions } from './tfl/tflApiClient';
+import { getArrivalPredictions } from './apiClients/tflApiClient';
 
 const readline = createInterface({
     input: process.stdin,

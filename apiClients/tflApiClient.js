@@ -1,6 +1,6 @@
 import { URL } from 'url';
 import request from 'request';
-import ArrivalPrediction from './arrivalPrediction';
+import ArrivalPrediction from '../models/arrivalPrediction';
 
 const BASE_URL = 'https://api.tfl.gov.uk';
 const REQUIRED_PARAMS = [
