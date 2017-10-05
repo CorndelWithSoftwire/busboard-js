@@ -1,5 +1,6 @@
 import BaseApiClient from './baseApiClient';
 import ArrivalPrediction from '../models/arrivalPrediction';
+import StopPoint from '../models/stopPoint';
 
 const BASE_URL = 'https://api.tfl.gov.uk';
 const REQUIRED_PARAMS = [
@@ -12,11 +13,15 @@ export default class TflApiClient extends BaseApiClient {
         super(BASE_URL, REQUIRED_PARAMS);
     }
 
-    // The success callback passed to this function should expect 
+    // The success callback passed to this method should expect 
     // to be given an array of ArrivalPrediction objects.
     getArrivalPredictions(stopId, onSuccess, onError) {
+        const endpoint = `StopPoint/${stopId}/Arrivals`;
+        const parameters = [];
+
         this.makeGetRequest(
-            `StopPoint/${stopId}/Arrivals`,
+            endpoint,
+            parameters,
             (response, body) => {
                 const arrivalPredictions = JSON.parse(body).map(entity =>
                     new ArrivalPrediction(entity.lineName, entity.destinationName, entity.timeToStation)
@@ -25,5 +30,29 @@ export default class TflApiClient extends BaseApiClient {
             },
             error => onError(error)
         );
+    }
+
+    // The success callback passed to this method should expect
+    // to be given an array of StopPoint objects.
+    getStopPointsNear(location, onSuccess, onError) {
+        const endpoint = `StopPoint`;
+        const parameters = [
+            {name: 'stopTypes', value: 'NaptanPublicBusCoachTram'},
+            {name: 'lat', value: location.latitude},
+            {name: 'lon', value: location.longitude},
+            {name: 'radius', value: 1000}
+        ];
+
+        this.makeGetRequest(
+            endpoint,
+            parameters,
+            (response, body) => {
+                const stopPoints = JSON.parse(body).map(entity =>
+                    new StopPoint(entity.naptanId, entity.commonName)
+                );
+                onSuccess(stopPoints);
+            },
+            error => onError(error)
+        )
     }
 }

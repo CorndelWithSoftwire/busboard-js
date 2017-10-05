@@ -7,14 +7,15 @@ export default class BaseApiClient {
         this.requiredParams = requiredParams;
     }
 
-    requestUrl(endpoint) {
+    requestUrl(endpoint, parameters) {
         const requestUrl = new URL(endpoint, this.baseUrl);
+        parameters.forEach(param => requestUrl.searchParams.append(param.name, param.value));
         this.requiredParams.forEach(param => requestUrl.searchParams.append(param.name, param.value));
         return requestUrl.href;
     }
 
-    makeGetRequest(endpoint, onSuccess, onError) {
-        const url = this.requestUrl(endpoint);
+    makeGetRequest(endpoint, parameters, onSuccess, onError) {
+        const url = this.requestUrl(endpoint, parameters);
         request.get(url, (err, response, body) => {
             if (err) {
                 onError(err);
