@@ -1,4 +1,6 @@
 import express from 'express';
+import path from 'path';
+
 import TflApiClient from './apiClients/tflApiClient';
 import PostcodesApiClient from './apiClients/postcodesApiClient';
 import ArrivalsService from './services/arrivalsService';
@@ -14,6 +16,8 @@ const stopPointsService = new StopPointsService(tflApiClient);
 const departureBoardsService = new DepartureBoardsService(arrivalsService, locationsService, stopPointsService);
 
 const app = express();
+
+app.use(express.static('frontend'));
 
 app.get('/departureBoards', (req, res) => {
     const postcode = req.query.postcode;
@@ -33,4 +37,4 @@ app.get('/departureBoards', (req, res) => {
     }
 });
 
-app.listen(3000, () => console.log('\nBusBoard API listening on port 3000'));
+app.listen(3000, () => console.log('\nBusBoard listening on port 3000'));
