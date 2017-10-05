@@ -1,10 +1,12 @@
 import { createInterface } from 'readline';
-import { getArrivalPredictions } from './apiClients/tflApiClient';
+import TflApiClient from './apiClients/tflApiClient';
 
 const readline = createInterface({
     input: process.stdin,
     output: process.stdout
 });
+
+const tflApiClient = new TflApiClient();
 
 function promptForStopIdAndThen(callback) {
     readline.question('\nEnter your stop ID: ', callback);
@@ -24,7 +26,7 @@ function displayEarliestPredictions(stopId, predictions) {
 
 function runForever() {
     promptForStopIdAndThen(stopId => {
-        getArrivalPredictions(
+        tflApiClient.getArrivalPredictions(
             stopId, 
             predictions => {
                 displayEarliestPredictions(stopId, predictions);
