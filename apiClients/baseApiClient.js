@@ -20,7 +20,7 @@ export default class BaseApiClient {
             if (err) {
                 onError(err);
             } else if (response.statusCode !== 200) {
-                onError(new Error(`Request to ${url} failed with status code ${response.statusCode}. ${JSON.parse(body).message}`));
+                onError(new Error(`Request to ${url} failed with status code ${response.statusCode}. Details:\n\n${body}`));
             } else {
                 onSuccess(response, body);
             }

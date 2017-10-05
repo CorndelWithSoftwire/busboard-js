@@ -33,7 +33,8 @@ export default class TflApiClient extends BaseApiClient {
     }
 
     // The success callback passed to this method should expect
-    // to be given an array of StopPoint objects.
+    // to be given an array of StopPoint objects, from nearest
+    // to furthest.
     getStopPointsNear(location, onSuccess, onError) {
         const endpoint = `StopPoint`;
         const parameters = [
@@ -47,7 +48,7 @@ export default class TflApiClient extends BaseApiClient {
             endpoint,
             parameters,
             (response, body) => {
-                const stopPoints = JSON.parse(body).map(entity =>
+                const stopPoints = JSON.parse(body).stopPoints.map(entity =>
                     new StopPoint(entity.naptanId, entity.commonName)
                 );
                 onSuccess(stopPoints);

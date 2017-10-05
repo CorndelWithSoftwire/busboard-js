@@ -19,7 +19,7 @@ export default class PostcodesApiClient extends BaseApiClient {
             parameters,
             (response, body) => {
                 const jsonBody = JSON.parse(body);
-                onSuccess(new Location(jsonBody.latitude, jsonBody.longitude));
+                onSuccess(new Location(jsonBody.result.latitude, jsonBody.result.longitude));
             },
             error => onError(error)
         );
