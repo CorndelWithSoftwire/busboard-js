@@ -17,6 +17,7 @@
     "del-cli": "^1.1.0"
   },
   "dependencies": {
+    "express": "^4.16.1",
     "request": "^2.83.0"
   }
 }

@@ -29,12 +29,12 @@ export default class TflApiClient extends BaseApiClient {
     // Returns a Promise that, upon success, resolves 
     // to an array of StopPoint objects, from nearest 
     // to furthest.
-    getStopPointsNear(location) {
+    getNearbyStopPoints(latitude, longitude) {
         const endpoint = `StopPoint`;
         const parameters = [
             {name: 'stopTypes', value: 'NaptanPublicBusCoachTram'},
-            {name: 'lat', value: location.latitude},
-            {name: 'lon', value: location.longitude},
+            {name: 'lat', value: latitude},
+            {name: 'lon', value: longitude},
             {name: 'radius', value: 1000}
         ];
 
