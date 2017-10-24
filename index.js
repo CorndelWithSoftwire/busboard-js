@@ -18,6 +18,7 @@ const departureBoardsService = new DepartureBoardsService(arrivalsService, locat
 const app = express();
 
 app.use(express.static('frontend'));
+app.use('/history', express.static('frontend/history.html'));
 
 app.get('/departureBoards', (req, res) => {
     const postcode = req.query.postcode;
