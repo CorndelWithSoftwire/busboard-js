@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import path from 'path';
 
 import TflApiClient from './apiClients/tflApiClient';
@@ -17,7 +18,9 @@ const departureBoardsService = new DepartureBoardsService(arrivalsService, locat
 
 const app = express();
 
-app.use(express.static('frontend'));
+app.use(cors());
+
+app.use(express.static('frontend/build'));
 
 app.get('/departureBoards', (req, res) => {
     const postcode = req.query.postcode;
@@ -37,4 +40,4 @@ app.get('/departureBoards', (req, res) => {
     }
 });
 
-app.listen(3000, () => console.log('\nBusBoard listening on port 3000'));
+app.listen(3001, () => console.log('\nBusBoard listening on port 3000'));

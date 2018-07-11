@@ -1,0 +1,10 @@
+.BusBoard {
+    padding: 20px;
+    margin: auto;
+    max-width: 800px;
+}
+
+.BusBoard .error {
+    margin: 20px;
+    color: darkred;
+}

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "clean": "del-cli dist/**/* logs/*",
-    "build": "npm run clean && babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log --copy-files",
+    "build": "npm run clean && babel ./ --out-dir dist/ --ignore ./node_modules,./.babelrc,./package.json,./npm-debug.log,./frontend --copy-files",
     "start": "npm run build && node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,6 +17,7 @@
     "del-cli": "^1.1.0"
   },
   "dependencies": {
+    "cors": "^2.8.4",
     "express": "^4.16.1",
     "request": "^2.83.0"
   }
