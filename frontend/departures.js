@@ -1,42 +1,43 @@
-function updateHtmlWithError(response) {
-    document.getElementById('results').innerHTML = `<h2>Error</h2>${response}`
-}
+$(document).ready(function () {
+    var form = $('#postcode-form');
+    var results = $('#results');
 
-function getArrivalHtml(arrival) {
-    return `<li>${Math.round(arrival.timeToStation / 60)} minutes: ${arrival.lineName} to ${arrival.destinationName}</li>`;
-}
+    form.submit(function (event) {
+        event.preventDefault();
+        results.empty();
+        loadResults(this.postcode.value);
+    });
 
-function getArrivalsHtml(arrivals) {
-    return `<ul>${arrivals.map(function(arrival) { return getArrivalHtml(arrival); }).join('')}</ul>`;
-}
+    function loadResults(postcode) {
+        $.get('/departureBoards', {postcode: postcode})
+            .done(function (data) {
+                displayResults(data);
+            })
+            .fail(function (error) {
+                console.log(error);
+                displayError(error);
+            });
+    }
 
-function getDepartureBoardHtml(departureBoard) {
-    return `<h3>${departureBoard.stopPoint.commonName}</h3>${getArrivalsHtml(departureBoard.arrivals)}`;
-}
+    function displayResults(data) {
+        $('<h2/>').text('Results').appendTo(results);
+        data.forEach(function (board) {
+            displayBoard(board);
+        });
+    }
 
-function getDepartureBoardsHtml(departureBoards) {
-    return `${departureBoards.map(function(board) { return getDepartureBoardHtml(board); }).join('')}`;
-}
+    function displayBoard(board) {
+        $('<h3/>').text(board.stopPoint.commonName).appendTo(results);
+        var list = $('<ul/>');
+        board.arrivals.forEach(function (arrival) {
+            $('<li/>').text(`${Math.round(arrival.timeToStation / 60)} minutes: ${arrival.lineName} to ${arrival.destinationName}`).appendTo(list);
+        });
+        list.appendTo(results);
+        list.hide().slideDown();
+    }
 
-function updateHtmlWithResults(response) {
-    document.getElementById('results').innerHTML = `<h2>Results</h2>${getDepartureBoardsHtml(JSON.parse(response))}`;
-}
-
-function updateResults(postcode) {
-    var xhttp = new XMLHttpRequest();
-    xhttp.open('GET', `/departureBoards?postcode=${postcode}`, true);
-    xhttp.setRequestHeader('Content-Type', 'application/json');
-    xhttp.onload = function() {
-        console.log(xhttp.status, xhttp.response);
-        if (xhttp.status === 200) {
-            updateHtmlWithResults(xhttp.response);
-        } else {
-            updateHtmlWithError(xhttp.response);
-        }
-    };
-    xhttp.send();
-}
-
-function onSubmit(form) {
-    updateResults(form.postcode.value.replace(/\s/g, ''));
-}
+    function displayError(error) {
+        $('<h2/>').text('Error').appendTo(results);
+        $('<div/>').text(err).appendTo(results);
+    }
+});
